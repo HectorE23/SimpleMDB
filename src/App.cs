@@ -8,6 +8,7 @@ public class App
 {
     private HttpListener server;
     private HttpRouter router;
+    private int requestId;
 
     public App()
     {
@@ -22,17 +23,32 @@ public class App
         var userController = new UserController(userService);
         var authController = new AuthController(userService);
         
+        var actorRepository = new MockActorRepository();
+        var actorService = new MockActorService(actorRepository);
+        var actorController = new ActorController(actorService);
+        
+
         router = new HttpRouter();
+        router.Use(HttpUtils.ServeStaticFile);
         router.Use(HttpUtils.ReadRequestFormData);
 
         router.AddGet("/", authController.LandingPageGet);
-        router.AddGet("/users", userController.ViewAllGet);
-        router.AddGet("/users/add", userController.AddGet);
-        router.AddPost("/users/add", userController.AddPost);
-        router.AddGet("/users/view", userController.ViewAGet);
-        router.AddGet("/users/edit", userController.EditGet);
-        router.AddPost("/users/edit", userController.EditPost);
-        router.AddGet("/users/remove", userController.RemoveGet);
+        router.AddGet("/users", userController.ViewAllUsersGet);
+        router.AddGet("/users/add", userController.AddUserGet);
+        router.AddPost("/users/add", userController.AddUserPost);
+        router.AddGet("/users/view", userController.ViewUserGet);
+        router.AddGet("/users/edit", userController.EditUserGet);
+        router.AddPost("/users/edit", userController.EditUserPost);
+        router.AddPost("/users/remove", userController.RemoveUserPost);
+
+        router.AddGet("/", authController.LandingPageGet);
+        router.AddGet("/actors", actorController.ViewAllActorsGet);
+        router.AddGet("/actors/add", actorController.AddActorGet);
+        router.AddPost("/actors/add", actorController.AddActorPost);
+        router.AddGet("/actors/view", actorController.ViewActorGet);
+        router.AddGet("/actors/edit", actorController.EditActorGet);
+        router.AddPost("/actors/edit", actorController.EditActorPost);
+        router.AddPost("/actors/remove", actorController.RemoveActorPost);
     }
 
     public async Task Start()
@@ -42,7 +58,7 @@ public class App
         while (server.IsListening)
         {
             var ctx = server.GetContext();
-            await HandleContextAsync(ctx);
+            _ = HandleContextAsync(ctx);
         }
     }
 
@@ -58,6 +74,49 @@ public class App
         var res = ctx.Response;
         var options = new Hashtable();
 
-        await router.Handle(req, res, options);
+        var rid = req.Headers["X-Request-ID"] ?? requestId.ToString().PadLeft(6, ' ');
+        var method = req.HttpMethod;
+        var rawUrl = req.RawUrl;
+
+        res.StatusCode = HttpRouter.RESPONSE_NOT_SENT_YET;
+        var startTime = DateTime.UtcNow;
+        requestId++;
+
+        string error = "";
+
+        try
+        {
+            await router.Handle(req, res, options);
+        }
+        catch (Exception ex)
+        {
+            error = ex.ToString();
+
+            if (res.StatusCode == HttpRouter.RESPONSE_NOT_SENT_YET)
+            {
+                if (Environment.GetEnvironmentVariable("DEVELOPMENT_MODE") != "Production")
+                {
+                    var html = HtmlTemplates.Base("SimpleMDB", "Error Page", ex.ToString());
+                    await HttpUtils.Respond(req, res, options, (int)HttpStatusCode.InternalServerError, html);
+                }
+                else
+                {
+                    var html = HtmlTemplates.Base("SimpleMDB", "Error Page", "An error occurred.");
+                    await HttpUtils.Respond(req, res, options, (int)HttpStatusCode.InternalServerError, html);
+                }
+            }
+        }
+        finally
+        {
+            if (res.StatusCode == HttpRouter.RESPONSE_NOT_SENT_YET)
+            {
+                var html = HtmlTemplates.Base("SimpleMDB", "Not Found Page", "Resource was not found.");
+                await HttpUtils.Respond(req, res, options, (int)HttpStatusCode.NotFound, html);
+            }
+
+            var elapsedTime = DateTime.UtcNow - startTime;
+
+            Console.WriteLine($"Request {rid}: {method} {rawUrl} from {req.UserHostName} --> {res.StatusCode} ({res.ContentLength64} bytes) in [{res.ContentType}] in {elapsedTime.TotalMilliseconds} ms error: \"{error}\"");
+        }
     }
 }

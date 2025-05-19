@@ -48,7 +48,6 @@ public class HttpRouter
 
     public async Task Handle(HttpListenerRequest req, HttpListenerResponse res, Hashtable options)
     {
-        res.StatusCode = RESPONSE_NOT_SENT_YET;
 
         foreach (var middleware in middlewares)
         {
@@ -68,10 +67,5 @@ public class HttpRouter
             }
         }
 
-        if (res.StatusCode == RESPONSE_NOT_SENT_YET)
-        {
-            res.StatusCode = (int)HttpStatusCode.NotFound;
-            res.Close();
-        }
     }
 }

@@ -19,9 +19,17 @@ public class MockUserService : IUserService
 
             return await Task.FromResult(result);
     }
-    public async Task<Result<User>> Create (User user)
+    public async Task<Result<User>> Create (User newUser)
     {
-    User? createdUser = await userRepository.Create(user);
+    if (string.IsNullOrWhiteSpace(newUser.Username) )
+    {
+        return new Result<User>(new Exception("Username cannot be empty."));
+    }
+    else if (newUser.Username.Length > 16)
+    {
+        return new Result<User>(new Exception("Username cannot have more than 16 character"));
+    }
+    User? createdUser = await userRepository.Create(newUser);
 
     var result = (createdUser == null) ?
             new Result<User>(new Exception("User could not be created")):
@@ -42,6 +50,15 @@ public class MockUserService : IUserService
     }
     public async Task<Result<User>> Update(int id, User newUser)
     {
+         if (string.IsNullOrWhiteSpace(newUser.Username) )
+    {
+        return new Result<User>(new Exception("Username cannot be empty."));
+    }
+    else if (newUser.Username.Length > 16)
+    {
+        return new Result<User>(new Exception("Username cannot have more than 16 character"));
+    }
+    
         User? user = await userRepository.Update(id, newUser);
 
     var result = (user == null) ?
