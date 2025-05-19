@@ -4,13 +4,13 @@ public class ActorHtmlTemplates
 {
     public static string ViewAllActorsGet(List<Actor> actors, int actorCount, int page, int size)
     {
-            int pageCount = (int) Math.Ceiling((double) actorCount / size);
+        int pageCount = (int)Math.Ceiling((double)actorCount / size);
 
-            string rows = "";
+        string rows = "";
 
-            foreach(var actor in actors)
-            {
-                rows += @$"
+        foreach (var actor in actors)
+        {
+            rows += @$"
                 <tr>
                     <td>{actor.Id}</td>
                     <td>{actor.FirstName}</td>
@@ -26,8 +26,8 @@ public class ActorHtmlTemplates
                     </td>
                     </tr>
                     ";
-            }
-            string html = @$"
+        }
+        string html = @$"
             <div class=""add"">
                 <a href=""/actors/add"">Add New Actor</a>
             </div>
@@ -54,12 +54,12 @@ public class ActorHtmlTemplates
                 <a href=""?page={pageCount}&size={size}"">Last</a>               
             </div>
             ";
-            return html;
+        return html;
     }
 
     public static string AddActorGet(string firstname, string lastname, string bio, string rating)
     {
-    string html = $@"
+        string html = $@"
 <form class=""addform"" action=""/actors/add"" method=""POST"">
     <label for=""firstname"">First Name</label>
     <input id=""firstname"" name=""firstname"" type=""text"" placeholder=""First Name"" value=""{firstname}"">
@@ -74,7 +74,7 @@ public class ActorHtmlTemplates
 <div style=""color:red;"">
 ";
 
-return html;
+        return html;
     }
 
     public static string ViewActorGet(Actor actor)
@@ -101,7 +101,7 @@ return html;
             </table>
             ";
 
-            return html;
+        return html;
     }
 
     public static string EditActorGet(int aid, Actor actor)
@@ -120,7 +120,7 @@ return html;
     </form>
     ";
 
-    return html;
+        return html;
     }
 
 }
