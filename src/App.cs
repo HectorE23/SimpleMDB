@@ -47,7 +47,7 @@ public class App
         router.AddPost("/login", authController.LoginPost);
         router.AddPost("/logout", authController.LogoutPost);
 
-        router.AddGet("/users", authController.CheckAdmin, userController.ViewAllUsersGet);
+        router.AddGet("/users", authController.CheckAuth, userController.ViewAllUsersGet);
         router.AddGet("/users/add", authController.CheckAdmin, userController.AddUserGet);
         router.AddPost("/users/add", authController.CheckAdmin, userController.AddUserPost);
         router.AddGet("/users/view", authController.CheckAdmin, userController.ViewUserGet);
