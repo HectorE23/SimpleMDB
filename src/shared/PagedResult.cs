@@ -1,5 +1,3 @@
-namespace SimpleMDB;
-
 public class PagedResult<T>
 {
     public List<T> Values { get; }
