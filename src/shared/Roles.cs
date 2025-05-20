@@ -1,3 +1,4 @@
+
 namespace SimpleMDB;
 
 public class Roles
@@ -8,4 +9,5 @@ public class Roles
     public static readonly string[] ROLES = { ADMIN, USER };
 
     public static bool Check(string? role) {return ROLES.Contains(role); }
+    
 }

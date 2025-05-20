@@ -19,7 +19,7 @@ public class ActorController
     public async Task ViewAllActorsGet(HttpListenerRequest req, HttpListenerResponse res, Hashtable options)
     {
         string message = req.QueryString["message"] ?? "";
-        string ratings = "";
+        
         int page = int.TryParse(req.QueryString["page"], out int p) ? p : 1;
         int size = int.TryParse(req.QueryString["size"], out int s) ? s : 5;
 
